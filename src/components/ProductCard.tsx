@@ -15,7 +15,7 @@ const CARD_WIDTH = width * 0.4;
 
 interface ProductCardProps {
   product: Doc<'products'>;
-  onPress: () => void;
+  onPress: (product: Doc<'products'>) => void;
   style?: any;
 }
 
@@ -34,7 +34,11 @@ export function ProductCard({ product, onPress, style }: ProductCardProps) {
   };
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => onPress(product)}
+      testID="product-card"
+    >
       <View style={[styles.container, style]}>
         {product.featured && (
           <View style={styles.featuredBadge}>
@@ -173,5 +177,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-Bold',
     color: '#e74c3c',
+  },
+  card: {
+    width: CARD_WIDTH,
+    borderRadius: 12,
   },
 }); 

@@ -1,9 +1,10 @@
 module.exports = function (api) {
-  api.cache(true);
+  const isTest = api.env('test');
+  api.cache(!isTest);
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      'expo-router/babel',
+      !isTest && 'expo-router/babel',
       'react-native-reanimated/plugin',
       'nativewind/babel',
       [
@@ -22,6 +23,6 @@ module.exports = function (api) {
           },
         },
       ],
-    ],
+    ].filter(Boolean),
   };
 }; 
