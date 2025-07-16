@@ -235,4 +235,122 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
-} 
+}
+
+// Get products by subcategory
+export const getProductsBySubcategory = query({
+  args: {
+    subcategory: v.string(),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 20;
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_subcategory", (q) => q.eq("subcategory", args.subcategory))
+      .filter((q) => q.eq(q.field("active"), true))
+      .take(limit);
+    
+    return products;
+  },
+});
+
+// Get popular products (by rating)
+export const getPopularProducts = query({
+  args: {
+    category: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 10;
+    
+    let query = ctx.db
+      .query("products")
+      .filter((q) => q.eq(q.field("active"), true));
+    
+    if (args.category) {
+      query = query.filter((q) => q.eq(q.field("category"), args.category));
+    }
+    
+    const products = await query.take(limit);
+    
+    // Sort by rating (products with higher ratings first)
+    products.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
+    
+    return products;
+  },
+});
+
+// Get products by brand
+export const getProductsByBrand = query({
+  args: {
+    brand: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 20;
+    const products = await ctx.db
+      .query("products")
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("active"), true),
+          q.eq(q.field("brand"), args.brand)
+        )
+      )
+      .take(limit);
+    
+    return products;
+  },
+});
+
+// Get products by tags
+export const getProductsByTags = query({
+  args: {
+    tags: v.array(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 20;
+    const products = await ctx.db
+      .query("products")
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("active"), true),
+          q.gte(q.field("tags"), args.tags)
+        )
+      )
+      .take(limit);
+    
+    return products;
+  },
+});
+
+// Get related products
+export const getRelatedProducts = query({
+  args: {
+    productId: v.id("products"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 6;
+    
+    const product = await ctx.db.get(args.productId);
+    if (!product) return [];
+    
+    // Get products in the same category and subcategory
+    const relatedProducts = await ctx.db
+      .query("products")
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("active"), true),
+          q.eq(q.field("category"), product.category),
+          q.eq(q.field("subcategory"), product.subcategory),
+          q.neq(q.field("_id"), args.productId)
+        )
+      )
+      .take(limit);
+    
+    return relatedProducts;
+  },
+}); 

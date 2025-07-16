@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { useConvexAuth } from 'convex/react';
+import { useConvexAuth, useConvex } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { CategoryCard } from '../../src/components/CategoryCard';
 import { ProductCard } from '../../src/components/ProductCard';
@@ -31,6 +31,7 @@ const SKELETON_CATEGORIES = Array.from({ length: 3 }, (_, i) => ({ id: i }));
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { isAuthenticated } = useConvexAuth();
+  const convex = useConvex();
 
   // Mock data for featured products
   const MOCK_FEATURED_PRODUCTS = [
@@ -114,9 +115,7 @@ export default function HomeScreen() {
   } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
-      // This would be replaced with actual Convex query
-      // return await convex.query(api.products.getFeaturedProducts, { limit: 6 });
-      return MOCK_FEATURED_PRODUCTS;
+      return await convex.query(api.products.getFeaturedProducts, { limit: 6 });
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
@@ -131,12 +130,10 @@ export default function HomeScreen() {
   } = useQuery({
     queryKey: ['popular-wines'],
     queryFn: async () => {
-      // This would be replaced with actual Convex query
-      // return await convex.query(api.products.getProductsByCategory, { 
-      //   category: 'wine', 
-      //   limit: 6 
-      // });
-      return MOCK_POPULAR_WINES;
+      return await convex.query(api.products.getProductsByCategory, { 
+        category: 'wine', 
+        limit: 6 
+      });
     },
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,

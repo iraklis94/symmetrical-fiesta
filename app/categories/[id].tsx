@@ -11,6 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { ProductCard } from '../../src/components/ProductCard';
 import { ProductCardSkeleton } from '../../src/components/SkeletonLoader';
 
@@ -158,6 +160,7 @@ export default function CategoryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [selectedSubcategory, setSelectedSubcategory] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
+  const convex = useConvex();
 
   const category = useMemo(() => CATEGORIES[id as keyof typeof CATEGORIES], [id]);
 
@@ -169,17 +172,10 @@ export default function CategoryDetailScreen() {
   } = useQuery({
     queryKey: ['category-products', id, selectedSubcategory],
     queryFn: async () => {
-      // This would be replaced with actual Convex query
-      // return await convex.query(api.products.getProductsByCategory, {
-      //   category: id,
-      //   subcategory: selectedSubcategory === 'all' ? undefined : selectedSubcategory,
-      // });
-      
-      const categoryProducts = MOCK_PRODUCTS[id as keyof typeof MOCK_PRODUCTS] || [];
-      if (selectedSubcategory === 'all') {
-        return categoryProducts;
-      }
-      return categoryProducts.filter(p => p.subcategory === selectedSubcategory);
+      return await convex.query(api.products.getProductsByCategory, {
+        category: id,
+        subcategory: selectedSubcategory === 'all' ? undefined : selectedSubcategory,
+      });
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

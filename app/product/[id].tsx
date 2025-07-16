@@ -40,6 +40,12 @@ export default function ProductDetailScreen() {
     userLocation: location || undefined,
   });
 
+  // Check if product is in favorites
+  const isInFavorites = useQuery(api.favorites.isInFavorites, { productId });
+  
+  // Toggle favorite mutation
+  const toggleFavorite = useMutation(api.favorites.toggleFavorite);
+
   const handleAddToCart = () => {
     if (!selectedStore) {
       Alert.alert('Select Store', 'Please select a store to add this product to cart');
@@ -62,6 +68,25 @@ export default function ProductDetailScreen() {
       text1: 'Added to cart',
       text2: `${quantity} × ${product.name}`,
     });
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!product) return;
+    
+    try {
+      await toggleFavorite({ productId });
+      Toast.show({
+        type: 'success',
+        text1: isInFavorites ? 'Removed from favorites' : 'Added to favorites',
+        text2: product.name,
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update favorites',
+      });
+    }
   };
 
   if (!product) {
@@ -130,8 +155,12 @@ export default function ProductDetailScreen() {
               <Text style={styles.name}>{product.name}</Text>
               <Text style={styles.nameEn}>{product.nameEn}</Text>
             </View>
-            <TouchableOpacity style={styles.favoriteButton}>
-              <Ionicons name="heart-outline" size={28} color="#e74c3c" />
+            <TouchableOpacity style={styles.favoriteButton} onPress={handleToggleFavorite}>
+              <Ionicons 
+                name={isInFavorites ? "heart" : "heart-outline"} 
+                size={28} 
+                color="#e74c3c" 
+              />
             </TouchableOpacity>
           </View>
 

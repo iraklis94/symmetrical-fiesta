@@ -127,6 +127,70 @@ export default function RootLayout() {
                       headerShown: true,
                     }}
                   />
+                  <Stack.Screen
+                    name="orders"
+                    options={{
+                      title: 'My Orders',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="favorites"
+                    options={{
+                      title: 'My Favorites',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="addresses"
+                    options={{
+                      title: 'Delivery Addresses',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="payment"
+                    options={{
+                      title: 'Payment Methods',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="notifications"
+                    options={{
+                      title: 'Notifications',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="language"
+                    options={{
+                      title: 'Language & Region',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="help"
+                    options={{
+                      title: 'Help & Support',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="about"
+                    options={{
+                      title: 'About GreekMarket',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
                 </Stack>
                 <Toast />
               </SafeAreaProvider>

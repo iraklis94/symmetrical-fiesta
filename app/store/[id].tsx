@@ -11,6 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { ProductCard } from '../../src/components/ProductCard';
 import { ProductCardSkeleton } from '../../src/components/SkeletonLoader';
 
@@ -140,6 +142,7 @@ const MOCK_STORE_PRODUCTS = {
 
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const convex = useConvex();
 
   const store = useMemo(() => MOCK_STORES[id as keyof typeof MOCK_STORES], [id]);
 
@@ -151,12 +154,9 @@ export default function StoreDetailScreen() {
   } = useQuery({
     queryKey: ['store-products', id],
     queryFn: async () => {
-      // This would be replaced with actual Convex query
-      // return await convex.query(api.products.getProductsWithInventory, {
-      //   storeId: id,
-      // });
-      
-      return MOCK_STORE_PRODUCTS[id as keyof typeof MOCK_STORE_PRODUCTS] || [];
+      return await convex.query(api.products.getProductsWithInventory, {
+        storeId: id,
+      });
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
