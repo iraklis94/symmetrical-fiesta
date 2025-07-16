@@ -9,25 +9,44 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "jsx": "react-native",
-    "lib": ["es2020"],
-    "types": ["react", "react-native"],
+    "lib": [
+      "es2020"
+    ],
+    "types": [
+      "react",
+      "react-native"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@stores/*": ["./src/stores/*"],
-      "@services/*": ["./src/services/*"],
-      "@constants/*": ["./src/constants/*"],
-      "@convex/*": ["./convex/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@stores/*": [
+        "./src/stores/*"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
+      "@constants/*": [
+        "./src/constants/*"
+      ],
+      "@convex/*": [
+        "./convex/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules",
@@ -35,4 +54,4 @@
     "metro.config.js",
     "jest.config.js"
   ]
-} 
+}

@@ -253,30 +253,33 @@ export default function ProductDetailScreen() {
             {availability && availability.length > 0 ? (
               <FlatList
                 data={availability}
-                keyExtractor={(item) => item.store.id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={[
-                      styles.storeCard,
-                      selectedStore?.store.id === item.store.id && styles.selectedStoreCard,
-                    ]}
-                    onPress={() => setSelectedStore(item)}
-                  >
-                    <View style={styles.storeInfo}>
-                      <Text style={styles.storeName}>{item.store.name}</Text>
-                      <Text style={styles.storeDistance}>
-                        {item.distance ? `${item.distance.toFixed(1)} km away` : 'Distance unknown'}
-                      </Text>
-                    </View>
-                    <View style={styles.priceInfo}>
-                      <Text style={styles.price}>{formatPrice(item.price)}</Text>
-                      {item.comparePrice && (
-                        <Text style={styles.comparePrice}>{formatPrice(item.comparePrice)}</Text>
-                      )}
-                      <Text style={styles.unit}>per {item.unit}</Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
+                keyExtractor={(item) => item?.store.id || ''}
+                renderItem={({ item }) => {
+                  if (!item) return null;
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.storeCard,
+                        selectedStore?.store.id === item.store.id && styles.selectedStoreCard,
+                      ]}
+                      onPress={() => setSelectedStore(item)}
+                    >
+                      <View style={styles.storeInfo}>
+                        <Text style={styles.storeName}>{item.store.name}</Text>
+                        <Text style={styles.storeDistance}>
+                          {item.distance ? `${item.distance.toFixed(1)} km away` : 'Distance unknown'}
+                        </Text>
+                      </View>
+                      <View style={styles.priceInfo}>
+                        <Text style={styles.price}>{formatPrice(item.price)}</Text>
+                        {item.comparePrice && (
+                          <Text style={styles.comparePrice}>{formatPrice(item.comparePrice)}</Text>
+                        )}
+                        <Text style={styles.unit}>per {item.unit}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                }}
                 scrollEnabled={false}
               />
             ) : (

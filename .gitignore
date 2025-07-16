@@ -98,4 +98,7 @@ dist/
 
 # Debug
 .vscode/
-.history/ 
+.history/
+
+# API directory with separate git repo
+realtime-api/ 

@@ -5,20 +5,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
-  Image,
   FlatList,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Link, router } from 'expo-router';
-import { useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ProductCard } from '../../src/components/ProductCard';
-import { CategoryCard } from '../../src/components/CategoryCard';
-import { useLocation } from '../../src/hooks/useLocation';
+import { router } from 'expo-router';
 
 const CATEGORIES = [
   { id: 'wine', name: 'Wine', nameGr: 'Κρασί', icon: '🍷', color: '#722f37' },
@@ -28,13 +20,6 @@ const CATEGORIES = [
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
-  const { location, errorMsg } = useLocation();
-  
-  const featuredProducts = useQuery(api.products.getFeaturedProducts, { limit: 10 });
-  const popularProducts = useQuery(api.products.getProductsByCategory, { 
-    category: 'wine', 
-    limit: 10 
-  });
 
   const handleRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -43,8 +28,20 @@ export default function HomeScreen() {
   }, []);
 
   const handleSearch = () => {
-    router.push('/search');
+    // Navigate to search
+    console.log('Search pressed');
   };
+
+  const renderCategory = ({ item }: { item: typeof CATEGORIES[0] }) => (
+    <TouchableOpacity
+      style={[styles.categoryCard, { backgroundColor: item.color + '20' }]}
+      onPress={() => console.log(`Category ${item.name} pressed`)}
+    >
+      <Text style={styles.categoryIcon}>{item.icon}</Text>
+      <Text style={styles.categoryName}>{item.nameGr}</Text>
+      <Text style={styles.categoryNameEn}>{item.name}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -58,11 +55,9 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Καλημέρα! 👋</Text>
-            <Text style={styles.subGreeting}>
-              {location ? `📍 ${location.city || 'Your location'}` : 'Getting location...'}
-            </Text>
+            <Text style={styles.subGreeting}>Welcome to GreekMarket</Text>
           </View>
-          <TouchableOpacity onPress={() => router.push('/notifications')}>
+          <TouchableOpacity>
             <View style={styles.notificationIcon}>
               <Ionicons name="notifications-outline" size={24} color="#2c3e50" />
               <View style={styles.notificationBadge} />
@@ -78,42 +73,20 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* Hero Banner */}
-        <LinearGradient
-          colors={['#e74c3c', '#c0392b']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.heroBanner}
-        >
-          <View style={styles.bannerContent}>
-            <Text style={styles.bannerTitle}>Premium Greek Products</Text>
-            <Text style={styles.bannerSubtitle}>Delivered to your door</Text>
-            <TouchableOpacity style={styles.bannerButton}>
-              <Text style={styles.bannerButtonText}>Explore Now</Text>
-            </TouchableOpacity>
-          </View>
-          <Image
-            source={require('../../assets/images/hero-products.png')}
-            style={styles.bannerImage}
-            resizeMode="contain"
-          />
-        </LinearGradient>
-
         {/* Categories */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Shop by Category</Text>
-          <View style={styles.categoriesGrid}>
-            {CATEGORIES.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                onPress={() => router.push(`/categories?type=${category.id}`)}
-              />
-            ))}
-          </View>
+          <FlatList
+            data={CATEGORIES}
+            renderItem={renderCategory}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesList}
+          />
         </View>
 
-        {/* Featured Products */}
+        {/* Featured Products Placeholder */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Products</Text>
@@ -121,22 +94,12 @@ export default function HomeScreen() {
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={featuredProducts || []}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <ProductCard
-                product={item}
-                onPress={() => router.push(`/product/${item._id}`)}
-              />
-            )}
-            contentContainerStyle={styles.productsList}
-          />
+          <View style={styles.placeholderBox}>
+            <Text style={styles.placeholderText}>Featured products will appear here</Text>
+          </View>
         </View>
 
-        {/* Popular Wines */}
+        {/* Popular Products Placeholder */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Popular Wines</Text>
@@ -144,19 +107,9 @@ export default function HomeScreen() {
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={popularProducts || []}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <ProductCard
-                product={item}
-                onPress={() => router.push(`/product/${item._id}`)}
-              />
-            )}
-            contentContainerStyle={styles.productsList}
-          />
+          <View style={styles.placeholderBox}>
+            <Text style={styles.placeholderText}>Popular wines will appear here</Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -177,12 +130,11 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 24,
-    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
     color: '#2c3e50',
   },
   subGreeting: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
     color: '#7f8c8d',
     marginTop: 2,
   },
@@ -217,53 +169,10 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     color: '#7f8c8d',
-    fontFamily: 'Inter-Regular',
-  },
-  heroBanner: {
-    marginHorizontal: 20,
-    marginVertical: 10,
-    borderRadius: 15,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  bannerContent: {
-    flex: 1,
-  },
-  bannerTitle: {
-    fontSize: 22,
-    fontFamily: 'Inter-Bold',
-    color: 'white',
-    marginBottom: 5,
-  },
-  bannerSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 15,
-  },
-  bannerButton: {
-    backgroundColor: 'white',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  bannerButtonText: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#e74c3c',
-  },
-  bannerImage: {
-    width: 120,
-    height: 120,
-    position: 'absolute',
-    right: -20,
-    bottom: -20,
   },
   section: {
     marginTop: 25,
+    marginBottom: 10,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -274,20 +183,57 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
     color: '#2c3e50',
+    paddingHorizontal: 20,
+    marginBottom: 15,
   },
   seeAllText: {
     fontSize: 14,
-    fontFamily: 'Inter-Medium',
+    fontWeight: '500',
     color: '#e74c3c',
   },
-  categoriesGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  categoriesList: {
     paddingHorizontal: 20,
   },
-  productsList: {
-    paddingHorizontal: 20,
+  categoryCard: {
+    width: 100,
+    height: 100,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+    padding: 10,
+  },
+  categoryIcon: {
+    fontSize: 36,
+    marginBottom: 8,
+  },
+  categoryName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2c3e50',
+    textAlign: 'center',
+  },
+  categoryNameEn: {
+    fontSize: 11,
+    color: '#7f8c8d',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  placeholderBox: {
+    height: 150,
+    marginHorizontal: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ecf0f1',
+    borderStyle: 'dashed',
+  },
+  placeholderText: {
+    color: '#7f8c8d',
+    fontSize: 14,
   },
 }); 

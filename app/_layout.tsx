@@ -7,41 +7,38 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import Toast from 'react-native-toast-message';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Font from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { View } from 'react-native';
+import Constants from 'expo-constants';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
-const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
+const convexUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_CONVEX_URL || 'https://empty-salamander-555.convex.cloud';
+const stripeKey = Constants.expoConfig?.extra?.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder';
+
+const convex = new ConvexReactClient(convexUrl);
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    async function loadResources() {
+    async function prepare() {
       try {
-        // Load custom fonts
-        await Font.loadAsync({
-          'Inter-Regular': require('../assets/fonts/Inter-Regular.ttf'),
-          'Inter-Medium': require('../assets/fonts/Inter-Medium.ttf'),
-          'Inter-SemiBold': require('../assets/fonts/Inter-SemiBold.ttf'),
-          'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
-        });
+        // Artificially delay for demo purposes
+        await new Promise<void>(resolve => setTimeout(resolve, 1000));
       } catch (e) {
         console.warn(e);
       } finally {
-        setFontsLoaded(true);
+        setAppIsReady(true);
         await SplashScreen.hideAsync();
       }
     }
 
-    loadResources();
+    prepare();
   }, []);
 
-  if (!fontsLoaded) {
+  if (!appIsReady) {
     return null;
   }
 
@@ -49,7 +46,7 @@ export default function RootLayout() {
     <ConvexProvider client={convex}>
       <QueryClientProvider client={queryClient}>
         <StripeProvider
-          publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+          publishableKey={stripeKey}
           merchantIdentifier="merchant.com.greekmarket.app"
         >
           <GestureHandlerRootView style={{ flex: 1 }}>

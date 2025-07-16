@@ -1,292 +1,156 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
-  FlatList,
-  Dimensions,
+  ScrollView,
 } from 'react-native';
-import MapboxGL from '@rnmapbox/maps';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
-import { useLocation } from '../../src/hooks/useLocation';
-import { router } from 'expo-router';
-import { Doc } from '../../convex/_generated/dataModel';
-import BottomSheet from '@gorhom/bottom-sheet';
 
-const { height } = Dimensions.get('window');
-
-// Initialize Mapbox
-MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN!);
+const MOCK_STORES = [
+  {
+    id: '1',
+    name: 'AB Vassilopoulos',
+    type: 'supermarket',
+    distance: 0.8,
+    address: 'Syntagma Square, Athens',
+    rating: 4.5,
+  },
+  {
+    id: '2',
+    name: 'Sklavenitis',
+    type: 'supermarket',
+    distance: 1.2,
+    address: 'Kolonaki, Athens',
+    rating: 4.3,
+  },
+  {
+    id: '3',
+    name: 'The Wine Shop',
+    type: 'specialty',
+    distance: 2.1,
+    address: 'Plaka, Athens',
+    rating: 4.8,
+  },
+];
 
 export default function MapScreen() {
-  const { location, loading: locationLoading } = useLocation();
-  const [selectedStore, setSelectedStore] = useState<Doc<'stores'> | null>(null);
-  const [followUser, setFollowUser] = useState(true);
-  const cameraRef = useRef<MapboxGL.Camera>(null);
-  const bottomSheetRef = useRef<BottomSheet>(null);
-
-  // Query nearby stores
-  const stores = useQuery(api.stores.getNearbyStores, 
-    location ? {
-      location: {
-        latitude: location.latitude,
-        longitude: location.longitude,
-      },
-      radius: 10, // 10km radius
-    } : undefined
+  const renderStore = (store: typeof MOCK_STORES[0]) => (
+    <TouchableOpacity key={store.id} style={styles.storeCard}>
+      <View style={styles.storeIcon}>
+        <Ionicons
+          name={store.type === 'supermarket' ? 'cart' : 'business'}
+          size={24}
+          color="#e74c3c"
+        />
+      </View>
+      <View style={styles.storeInfo}>
+        <Text style={styles.storeName}>{store.name}</Text>
+        <Text style={styles.storeAddress}>{store.address}</Text>
+        <View style={styles.storeStats}>
+          <View style={styles.statItem}>
+            <Ionicons name="location-outline" size={14} color="#7f8c8d" />
+            <Text style={styles.statText}>{store.distance} km</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Ionicons name="star" size={14} color="#f39c12" />
+            <Text style={styles.statText}>{store.rating}</Text>
+          </View>
+        </View>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color="#7f8c8d" />
+    </TouchableOpacity>
   );
 
-  useEffect(() => {
-    if (location && cameraRef.current && followUser) {
-      cameraRef.current.setCamera({
-        centerCoordinate: [location.longitude, location.latitude],
-        zoomLevel: 14,
-        animationDuration: 1000,
-      });
-    }
-  }, [location, followUser]);
-
-  const handleStorePress = (store: Doc<'stores'>) => {
-    setSelectedStore(store);
-    setFollowUser(false);
-    
-    if (cameraRef.current) {
-      cameraRef.current.setCamera({
-        centerCoordinate: [store.location.longitude, store.location.latitude],
-        zoomLevel: 16,
-        animationDuration: 500,
-      });
-    }
-    
-    bottomSheetRef.current?.expand();
-  };
-
-  const renderStoreMarker = (store: Doc<'stores'>) => {
-    const isSelected = selectedStore?._id === store._id;
-    
-    return (
-      <MapboxGL.MarkerView
-        key={store._id}
-        coordinate={[store.location.longitude, store.location.latitude]}
-      >
-        <TouchableOpacity
-          onPress={() => handleStorePress(store)}
-          style={[styles.marker, isSelected && styles.selectedMarker]}
-        >
-          <Ionicons 
-            name={store.type === 'supermarket' ? 'cart' : 'storefront'} 
-            size={20} 
-            color="white" 
-          />
-        </TouchableOpacity>
-      </MapboxGL.MarkerView>
-    );
-  };
-
-  if (locationLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#e74c3c" />
-        <Text style={styles.loadingText}>Getting your location...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <MapboxGL.MapView 
-        style={styles.map}
-        styleURL={MapboxGL.StyleURL.Street}
-        logoEnabled={false}
-        attributionEnabled={false}
-      >
-        <MapboxGL.Camera
-          ref={cameraRef}
-          centerCoordinate={
-            location 
-              ? [location.longitude, location.latitude]
-              : [23.7275, 37.9838] // Default to Athens
-          }
-          zoomLevel={14}
-        />
-        
-        {/* User location */}
-        {location && (
-          <MapboxGL.UserLocation
-            visible={true}
-            showsUserHeadingIndicator={true}
-          />
-        )}
-        
-        {/* Store markers */}
-        {stores?.map((store) => renderStoreMarker(store))}
-      </MapboxGL.MapView>
-
-      {/* Map controls */}
-      <View style={styles.mapControls}>
-        <TouchableOpacity 
-          style={styles.controlButton}
-          onPress={() => {
-            setFollowUser(true);
-            if (location && cameraRef.current) {
-              cameraRef.current.setCamera({
-                centerCoordinate: [location.longitude, location.latitude],
-                zoomLevel: 14,
-                animationDuration: 500,
-              });
-            }
-          }}
-        >
-          <Ionicons 
-            name="locate" 
-            size={24} 
-            color={followUser ? '#e74c3c' : '#2c3e50'} 
-          />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.controlButton}
-          onPress={() => router.push('/search?mode=stores')}
-        >
-          <Ionicons name="search" size={24} color="#2c3e50" />
-        </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.mapPlaceholder}>
+        <Ionicons name="map-outline" size={80} color="#7f8c8d" />
+        <Text style={styles.mapPlaceholderText}>Map view coming soon</Text>
+        <Text style={styles.mapPlaceholderSubtext}>
+          Enable location to see nearby stores
+        </Text>
       </View>
-
-      {/* Store details bottom sheet */}
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={['25%', '50%']}
-        enablePanDownToClose={true}
-        backgroundStyle={styles.bottomSheet}
-      >
-        {selectedStore && (
-          <View style={styles.storeDetails}>
-            <View style={styles.storeHeader}>
-              <View style={styles.storeInfo}>
-                <Text style={styles.storeName}>{selectedStore.name}</Text>
-                <Text style={styles.storeAddress}>{selectedStore.location.address}</Text>
-                <View style={styles.storeStats}>
-                  <View style={styles.statItem}>
-                    <Ionicons name="star" size={16} color="#f39c12" />
-                    <Text style={styles.statText}>{selectedStore.rating.toFixed(1)}</Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Ionicons name="time-outline" size={16} color="#7f8c8d" />
-                    <Text style={styles.statText}>
-                      {selectedStore.estimatedDeliveryTime} min
-                    </Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Ionicons name="bicycle-outline" size={16} color="#7f8c8d" />
-                    <Text style={styles.statText}>
-                      €{selectedStore.deliveryFee.toFixed(2)}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            
-            <TouchableOpacity
-              style={styles.viewStoreButton}
-              onPress={() => router.push(`/store/${selectedStore._id}`)}
-            >
-              <Text style={styles.viewStoreButtonText}>View Store</Text>
-              <Ionicons name="arrow-forward" size={20} color="white" />
-            </TouchableOpacity>
-          </View>
-        )}
-      </BottomSheet>
-    </View>
+      
+      <View style={styles.storeListContainer}>
+        <Text style={styles.sectionTitle}>Nearby Stores</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {MOCK_STORES.map(renderStore)}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  map: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#f8f9fa',
   },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
+  mapPlaceholder: {
+    height: 300,
+    backgroundColor: '#ecf0f1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapPlaceholderText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginTop: 15,
+  },
+  mapPlaceholderSubtext: {
+    fontSize: 14,
     color: '#7f8c8d',
+    marginTop: 5,
   },
-  marker: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#e74c3c',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  selectedMarker: {
-    backgroundColor: '#c0392b',
-    transform: [{ scale: 1.2 }],
-  },
-  mapControls: {
-    position: 'absolute',
-    right: 20,
-    top: 60,
-    gap: 10,
-  },
-  controlButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  bottomSheet: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  storeDetails: {
+  storeListContainer: {
+    flex: 1,
     padding: 20,
   },
-  storeHeader: {
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 15,
+  },
+  storeCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  storeIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e74c3c20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
   },
   storeInfo: {
     flex: 1,
   },
   storeName: {
-    fontSize: 20,
-    fontFamily: 'Inter-SemiBold',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#2c3e50',
-    marginBottom: 5,
+    marginBottom: 2,
   },
   storeAddress: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
     color: '#7f8c8d',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   storeStats: {
     flexDirection: 'row',
@@ -298,22 +162,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#2c3e50',
-  },
-  viewStoreButton: {
-    backgroundColor: '#e74c3c',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    borderRadius: 10,
-    gap: 8,
-  },
-  viewStoreButtonText: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: 'white',
+    fontSize: 12,
+    color: '#7f8c8d',
   },
 }); 

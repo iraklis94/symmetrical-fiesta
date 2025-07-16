@@ -21,7 +21,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontFamily: 'Inter-Medium',
+          fontWeight: '500',
         },
       }}
     >
@@ -80,7 +80,7 @@ export default function TabLayout() {
                     style={{
                       color: 'white',
                       fontSize: 10,
-                      fontFamily: 'Inter-Bold',
+                      fontWeight: 'bold',
                     }}
                   >
                     {cartItemsCount}
