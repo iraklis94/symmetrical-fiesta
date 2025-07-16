@@ -32,9 +32,82 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { isAuthenticated } = useConvexAuth();
 
+  // Mock data for featured products
+  const MOCK_FEATURED_PRODUCTS = [
+    {
+      _id: '1',
+      name: 'Domaine Gerovassiliou Malagousia',
+      brand: 'Domaine Gerovassiliou',
+      category: 'wine',
+      price: 18.50,
+      avgRating: 4.8,
+      ratingsCount: 124,
+      featured: true,
+      images: [],
+    },
+    {
+      _id: '2',
+      name: 'Traditional Feta PDO',
+      brand: 'Greek Dairy Co.',
+      category: 'cheese',
+      price: 8.90,
+      avgRating: 4.6,
+      ratingsCount: 156,
+      featured: true,
+      images: [],
+    },
+    {
+      _id: '3',
+      name: 'Extra Virgin Olive Oil',
+      brand: 'Peloponnese Estate',
+      category: 'olive_oil',
+      price: 12.99,
+      avgRating: 4.9,
+      ratingsCount: 203,
+      featured: true,
+      images: [],
+    },
+  ];
+
+  const MOCK_POPULAR_WINES = [
+    {
+      _id: '4',
+      name: 'Boutari Naoussa Red',
+      brand: 'Boutari',
+      category: 'wine',
+      price: 15.99,
+      avgRating: 4.6,
+      ratingsCount: 89,
+      featured: false,
+      images: [],
+    },
+    {
+      _id: '5',
+      name: 'Tsantali Rapsani Reserve',
+      brand: 'Tsantali',
+      category: 'wine',
+      price: 22.00,
+      avgRating: 4.9,
+      ratingsCount: 67,
+      featured: true,
+      images: [],
+    },
+    {
+      _id: '6',
+      name: 'Alpha Estate Xinomavro',
+      brand: 'Alpha Estate',
+      category: 'wine',
+      price: 19.50,
+      avgRating: 4.7,
+      ratingsCount: 112,
+      featured: false,
+      images: [],
+    },
+  ];
+
   // Fetch featured products
   const {
-    data: featuredProducts = [],
+    data: featuredProducts = MOCK_FEATURED_PRODUCTS,
     isLoading: featuredLoading,
     error: featuredError,
     refetch: refetchFeatured,
@@ -43,7 +116,7 @@ export default function HomeScreen() {
     queryFn: async () => {
       // This would be replaced with actual Convex query
       // return await convex.query(api.products.getFeaturedProducts, { limit: 6 });
-      return [];
+      return MOCK_FEATURED_PRODUCTS;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
@@ -51,7 +124,7 @@ export default function HomeScreen() {
 
   // Fetch popular wines
   const {
-    data: popularWines = [],
+    data: popularWines = MOCK_POPULAR_WINES,
     isLoading: winesLoading,
     error: winesError,
     refetch: refetchWines,
@@ -63,7 +136,7 @@ export default function HomeScreen() {
       //   category: 'wine', 
       //   limit: 6 
       // });
-      return [];
+      return MOCK_POPULAR_WINES;
     },
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
