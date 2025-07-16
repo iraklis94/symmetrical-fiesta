@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  Image,
   StyleSheet,
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Doc } from '../../convex/_generated/dataModel';
+import { OptimizedImage } from './OptimizedImage';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.4;
@@ -19,25 +19,38 @@ interface ProductCardProps {
   style?: any;
 }
 
-export function ProductCard({ product, onPress, style }: ProductCardProps) {
-  const formatPrice = (price: number) => {
+export const ProductCard = React.memo(({ product, onPress, style }: ProductCardProps) => {
+  const formatPrice = useMemo(() => (price: number) => {
     return `€${price.toFixed(2)}`;
-  };
+  }, []);
 
-  const getCategoryEmoji = (category: string) => {
+  const getCategoryEmoji = useMemo(() => (category: string) => {
     switch (category) {
       case 'wine': return '🍷';
       case 'cheese': return '🧀';
       case 'olive_oil': return '🫒';
       default: return '📦';
     }
+  }, []);
+
+  const categoryEmoji = useMemo(() => getCategoryEmoji(product.category), [product.category, getCategoryEmoji]);
+
+  const ratingDisplay = useMemo(() => {
+    const rating = product.avgRating ? product.avgRating.toFixed(1) : '0.0';
+    const count = product.ratingsCount || 0;
+    return { rating, count };
+  }, [product.avgRating, product.ratingsCount]);
+
+  const handlePress = () => {
+    onPress(product);
   };
 
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => onPress(product)}
+      onPress={handlePress}
       testID="product-card"
+      activeOpacity={0.7}
     >
       <View style={[styles.container, style]}>
         {product.featured && (
@@ -48,15 +61,17 @@ export function ProductCard({ product, onPress, style }: ProductCardProps) {
         
         <View style={styles.imageContainer}>
           {product.images?.length > 0 ? (
-            <Image
-              source={{ uri: product.images[0] }}
+            <OptimizedImage
+              source={product.images[0]}
               style={styles.image}
               resizeMode="cover"
+              fallback={undefined}
+              priority="normal"
             />
           ) : (
             <View style={styles.placeholderImage}>
               <Text style={styles.categoryEmoji}>
-                {getCategoryEmoji(product.category)}
+                {categoryEmoji}
               </Text>
             </View>
           )}
@@ -71,10 +86,10 @@ export function ProductCard({ product, onPress, style }: ProductCardProps) {
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={14} color="#f39c12" />
             <Text style={styles.rating}>
-              {product.avgRating ? product.avgRating.toFixed(1) : '0.0'}
+              {ratingDisplay.rating}
             </Text>
             <Text style={styles.ratingCount}>
-              ({product.ratingsCount || 0})
+              ({ratingDisplay.count})
             </Text>
           </View>
 
@@ -85,7 +100,9 @@ export function ProductCard({ product, onPress, style }: ProductCardProps) {
       </View>
     </TouchableOpacity>
   );
-}
+});
+
+ProductCard.displayName = 'ProductCard';
 
 const styles = StyleSheet.create({
   container: {
@@ -182,4 +199,5 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     borderRadius: 12,
   },
+
 }); 

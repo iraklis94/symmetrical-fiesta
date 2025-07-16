@@ -1,0 +1,29 @@
+{
+  "performance": [
+    "Use React.memo for expensive components",
+    "Implement useMemo and useCallback for expensive calculations",
+    "Add proper loading states and skeleton screens",
+    "Optimize image loading with caching",
+    "Use virtual scrolling for large lists",
+    "Implement proper error boundaries"
+  ],
+  "bundle": [
+    "Remove unused dependencies",
+    "Use dynamic imports for code splitting",
+    "Optimize third-party library usage",
+    "Consider using smaller alternatives for large packages",
+    "Enable tree shaking in build configuration"
+  ],
+  "caching": [
+    "Implement proper React Query caching strategies",
+    "Add offline support with proper cache invalidation",
+    "Use persistent storage for critical data",
+    "Implement background sync for data updates"
+  ],
+  "images": [
+    "Use optimized image formats (WebP, AVIF)",
+    "Implement progressive image loading",
+    "Add proper image caching",
+    "Use appropriate image sizes for different screen densities"
+  ]
+}
