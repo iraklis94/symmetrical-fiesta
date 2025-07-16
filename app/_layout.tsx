@@ -86,11 +86,19 @@ export default function RootLayout() {
                   }}
                 >
                   <Stack.Screen name="(tabs)" />
-                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="auth" />
                   <Stack.Screen
                     name="product/[id]"
                     options={{
                       title: 'Product Details',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="categories/[id]"
+                    options={{
+                      title: 'Category',
                       headerBackTitle: 'Back',
                       headerShown: true,
                     }}

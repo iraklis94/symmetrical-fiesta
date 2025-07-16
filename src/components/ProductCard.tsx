@@ -94,7 +94,7 @@ export const ProductCard = React.memo(({ product, onPress, style }: ProductCardP
           </View>
 
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>From €--</Text>
+            <Text style={styles.price}>€{product.price?.toFixed(2) || '--'}</Text>
           </View>
         </View>
       </View>
