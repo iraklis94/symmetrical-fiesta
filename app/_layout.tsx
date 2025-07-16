@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Constants from 'expo-constants';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -17,78 +18,114 @@ const convexUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_CONVEX_URL || 'https:
 const stripeKey = Constants.expoConfig?.extra?.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder';
 
 const convex = new ConvexReactClient(convexUrl);
-const queryClient = new QueryClient();
+
+// Optimized QueryClient configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
 
-  useEffect(() => {
-    async function prepare() {
-      try {
-        // Artificially delay for demo purposes
-        await new Promise<void>(resolve => setTimeout(resolve, 1000));
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setAppIsReady(true);
-        await SplashScreen.hideAsync();
-      }
+  const prepare = useCallback(async () => {
+    try {
+      // Preload critical resources
+      await Promise.all([
+        // Add any critical preloading here
+        new Promise(resolve => setTimeout(resolve, 500)), // Reduced delay
+      ]);
+    } catch (e) {
+      console.warn('Error during app preparation:', e);
+    } finally {
+      setAppIsReady(true);
+      await SplashScreen.hideAsync();
     }
-
-    prepare();
   }, []);
+
+  useEffect(() => {
+    prepare();
+  }, [prepare]);
 
   if (!appIsReady) {
     return null;
   }
 
   return (
-    <ConvexProvider client={convex}>
-      <QueryClientProvider client={queryClient}>
-        <StripeProvider
-          publishableKey={stripeKey}
-          merchantIdentifier="merchant.com.greekmarket.app"
-        >
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaProvider>
-              <StatusBar style="dark" />
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="product/[id]"
-                  options={{
-                    title: 'Product Details',
-                    headerBackTitle: 'Back',
+    <ErrorBoundary>
+      <ConvexProvider client={convex}>
+        <QueryClientProvider client={queryClient}>
+          <StripeProvider
+            publishableKey={stripeKey}
+            merchantIdentifier="merchant.com.greekmarket.app"
+          >
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <SafeAreaProvider>
+                <StatusBar style="dark" />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    animation: 'slide_from_right',
                   }}
-                />
-                <Stack.Screen
-                  name="store/[id]"
-                  options={{
-                    title: 'Store Details',
-                    headerBackTitle: 'Back',
-                  }}
-                />
-                <Stack.Screen
-                  name="search"
-                  options={{
-                    title: 'Search Products',
-                    presentation: 'modal',
-                  }}
-                />
-                <Stack.Screen
-                  name="cart/checkout"
-                  options={{
-                    title: 'Checkout',
-                    presentation: 'modal',
-                  }}
-                />
-              </Stack>
-              <Toast />
-            </SafeAreaProvider>
-          </GestureHandlerRootView>
-        </StripeProvider>
-      </QueryClientProvider>
-    </ConvexProvider>
+                >
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen
+                    name="product/[id]"
+                    options={{
+                      title: 'Product Details',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="store/[id]"
+                    options={{
+                      title: 'Store Details',
+                      headerBackTitle: 'Back',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="search"
+                    options={{
+                      title: 'Search Products',
+                      presentation: 'modal',
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="cart/checkout"
+                    options={{
+                      title: 'Checkout',
+                      presentation: 'modal',
+                      headerShown: true,
+                    }}
+                  />
+                </Stack>
+                <Toast />
+              </SafeAreaProvider>
+            </GestureHandlerRootView>
+          </StripeProvider>
+        </QueryClientProvider>
+      </ConvexProvider>
+    </ErrorBoundary>
   );
 } 

@@ -11,7 +11,10 @@
     "lint": "eslint . --ext .ts,.tsx",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "analyze": "node scripts/analyze-bundle.js",
+    "build:analyze": "expo build --clear-cache && node scripts/analyze-bundle.js",
+    "optimize": "npm run lint && npm run analyze && npm run test"
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",

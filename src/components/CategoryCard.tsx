@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,23 +18,34 @@ interface CategoryCardProps {
     icon: string;
     color: string;
   };
-  onPress: () => void;
+  onPress: (category: CategoryCardProps['category']) => void;
+  style?: any;
 }
 
-export function CategoryCard({ category, onPress }: CategoryCardProps) {
+export const CategoryCard = React.memo(({ category, onPress, style }: CategoryCardProps) => {
+  const backgroundColor = useMemo(() => category.color + '20', [category.color]);
+
+  const handlePress = () => {
+    onPress(category);
+  };
+
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.container, { backgroundColor: category.color + '15' }]}>
-        <Text style={styles.icon}>{category.icon}</Text>
-        <Text style={styles.name}>{category.nameGr}</Text>
-        <Text style={styles.nameEn}>{category.name}</Text>
-      </View>
+    <TouchableOpacity
+      style={[styles.categoryCard, { backgroundColor }, style]}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <Text style={styles.categoryIcon}>{category.icon}</Text>
+      <Text style={styles.categoryName}>{category.nameGr}</Text>
+      <Text style={styles.categoryNameEn}>{category.name}</Text>
     </TouchableOpacity>
   );
-}
+});
+
+CategoryCard.displayName = 'CategoryCard';
 
 const styles = StyleSheet.create({
-  container: {
+  categoryCard: {
     width: CARD_SIZE,
     height: CARD_SIZE,
     borderRadius: 15,
@@ -42,17 +53,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
-  icon: {
+  categoryIcon: {
     fontSize: 36,
     marginBottom: 8,
   },
-  name: {
+  categoryName: {
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
     color: '#2c3e50',
     textAlign: 'center',
   },
-  nameEn: {
+  categoryNameEn: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
     color: '#7f8c8d',

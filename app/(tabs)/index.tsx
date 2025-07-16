@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,17 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { useConvexAuth } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { CategoryCard } from '../../src/components/CategoryCard';
+import { ProductCard } from '../../src/components/ProductCard';
+import { ProductCardSkeleton, CategoryCardSkeleton } from '../../src/components/SkeletonLoader';
 
 const CATEGORIES = [
   { id: 'wine', name: 'Wine', nameGr: 'Κρασί', icon: '🍷', color: '#722f37' },
@@ -18,30 +25,131 @@ const CATEGORIES = [
   { id: 'olive_oil', name: 'Olive Oil', nameGr: 'Ελαιόλαδο', icon: '🫒', color: '#27ae60' },
 ];
 
+const SKELETON_PRODUCTS = Array.from({ length: 6 }, (_, i) => ({ id: i }));
+const SKELETON_CATEGORIES = Array.from({ length: 3 }, (_, i) => ({ id: i }));
+
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
+  const { isAuthenticated } = useConvexAuth();
 
-  const handleRefresh = React.useCallback(() => {
+  // Fetch featured products
+  const {
+    data: featuredProducts = [],
+    isLoading: featuredLoading,
+    error: featuredError,
+    refetch: refetchFeatured,
+  } = useQuery({
+    queryKey: ['featured-products'],
+    queryFn: async () => {
+      // This would be replaced with actual Convex query
+      // return await convex.query(api.products.getFeaturedProducts, { limit: 6 });
+      return [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // Fetch popular wines
+  const {
+    data: popularWines = [],
+    isLoading: winesLoading,
+    error: winesError,
+    refetch: refetchWines,
+  } = useQuery({
+    queryKey: ['popular-wines'],
+    queryFn: async () => {
+      // This would be replaced with actual Convex query
+      // return await convex.query(api.products.getProductsByCategory, { 
+      //   category: 'wine', 
+      //   limit: 6 
+      // });
+      return [];
+    },
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+  });
+
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Refresh data here
-    setTimeout(() => setRefreshing(false), 2000);
+    try {
+      await Promise.all([
+        refetchFeatured(),
+        refetchWines(),
+      ]);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchFeatured, refetchWines]);
+
+  const handleSearch = useCallback(() => {
+    router.push('/search');
   }, []);
 
-  const handleSearch = () => {
-    // Navigate to search
-    console.log('Search pressed');
-  };
+  const handleCategoryPress = useCallback((category: typeof CATEGORIES[0]) => {
+    router.push(`/categories/${category.id}`);
+  }, []);
 
-  const renderCategory = ({ item }: { item: typeof CATEGORIES[0] }) => (
-    <TouchableOpacity
-      style={[styles.categoryCard, { backgroundColor: item.color + '20' }]}
-      onPress={() => console.log(`Category ${item.name} pressed`)}
-    >
-      <Text style={styles.categoryIcon}>{item.icon}</Text>
-      <Text style={styles.categoryName}>{item.nameGr}</Text>
-      <Text style={styles.categoryNameEn}>{item.name}</Text>
+  const handleProductPress = useCallback((product: any) => {
+    router.push(`/product/${product._id}`);
+  }, []);
+
+  const handleNotificationPress = useCallback(() => {
+    if (!isAuthenticated) {
+      Alert.alert('Sign In Required', 'Please sign in to view notifications');
+      return;
+    }
+    router.push('/notifications');
+  }, [isAuthenticated]);
+
+  const renderCategory = useCallback(({ item }: { item: typeof CATEGORIES[0] }) => (
+    <CategoryCard
+      category={item}
+      onPress={handleCategoryPress}
+    />
+  ), [handleCategoryPress]);
+
+  const renderProduct = useCallback(({ item }: { item: any }) => (
+    <ProductCard
+      product={item}
+      onPress={handleProductPress}
+    />
+  ), [handleProductPress]);
+
+  const renderProductSkeleton = useCallback(() => (
+    <ProductCardSkeleton />
+  ), []);
+
+  const renderCategorySkeleton = useCallback(() => (
+    <CategoryCardSkeleton />
+  ), []);
+
+  const keyExtractor = useCallback((item: any) => item.id || item._id, []);
+
+  const searchBar = useMemo(() => (
+    <TouchableOpacity onPress={handleSearch} activeOpacity={0.7}>
+      <View style={styles.searchBar}>
+        <Ionicons name="search-outline" size={20} color="#7f8c8d" />
+        <Text style={styles.searchPlaceholder}>Search for wine, cheese, olive oil...</Text>
+      </View>
     </TouchableOpacity>
-  );
+  ), [handleSearch]);
+
+  const header = useMemo(() => (
+    <View style={styles.header}>
+      <View>
+        <Text style={styles.greeting}>Καλημέρα! 👋</Text>
+        <Text style={styles.subGreeting}>Welcome to GreekMarket</Text>
+      </View>
+      <TouchableOpacity onPress={handleNotificationPress}>
+        <View style={styles.notificationIcon}>
+          <Ionicons name="notifications-outline" size={24} color="#2c3e50" />
+          <View style={styles.notificationBadge} />
+        </View>
+      </TouchableOpacity>
+    </View>
+  ), [handleNotificationPress]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -50,28 +158,12 @@ export default function HomeScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Καλημέρα! 👋</Text>
-            <Text style={styles.subGreeting}>Welcome to GreekMarket</Text>
-          </View>
-          <TouchableOpacity>
-            <View style={styles.notificationIcon}>
-              <Ionicons name="notifications-outline" size={24} color="#2c3e50" />
-              <View style={styles.notificationBadge} />
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <TouchableOpacity onPress={handleSearch} activeOpacity={0.7}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={20} color="#7f8c8d" />
-            <Text style={styles.searchPlaceholder}>Search for wine, cheese, olive oil...</Text>
-          </View>
-        </TouchableOpacity>
+        {header}
+        {searchBar}
 
         {/* Categories */}
         <View style={styles.section}>
@@ -79,37 +171,106 @@ export default function HomeScreen() {
           <FlatList
             data={CATEGORIES}
             renderItem={renderCategory}
-            keyExtractor={(item) => item.id}
+            keyExtractor={keyExtractor}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesList}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={3}
+            windowSize={5}
           />
         </View>
 
-        {/* Featured Products Placeholder */}
+        {/* Featured Products */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Products</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/products/featured')}>
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.placeholderBox}>
-            <Text style={styles.placeholderText}>Featured products will appear here</Text>
-          </View>
+          {featuredLoading ? (
+            <FlatList
+              data={SKELETON_PRODUCTS}
+              renderItem={renderProductSkeleton}
+              keyExtractor={keyExtractor}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.productsList}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={3}
+              windowSize={5}
+            />
+          ) : featuredError ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>Failed to load featured products</Text>
+              <TouchableOpacity onPress={() => refetchFeatured()}>
+                <Text style={styles.retryText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : featuredProducts.length > 0 ? (
+            <FlatList
+              data={featuredProducts}
+              renderItem={renderProduct}
+              keyExtractor={keyExtractor}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.productsList}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={3}
+              windowSize={5}
+            />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No featured products available</Text>
+            </View>
+          )}
         </View>
 
-        {/* Popular Products Placeholder */}
+        {/* Popular Wines */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Popular Wines</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/products/wine')}>
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.placeholderBox}>
-            <Text style={styles.placeholderText}>Popular wines will appear here</Text>
-          </View>
+          {winesLoading ? (
+            <FlatList
+              data={SKELETON_PRODUCTS}
+              renderItem={renderProductSkeleton}
+              keyExtractor={keyExtractor}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.productsList}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={3}
+              windowSize={5}
+            />
+          ) : winesError ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>Failed to load popular wines</Text>
+              <TouchableOpacity onPress={() => refetchWines()}>
+                <Text style={styles.retryText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : popularWines.length > 0 ? (
+            <FlatList
+              data={popularWines}
+              renderItem={renderProduct}
+              keyExtractor={keyExtractor}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.productsList}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={3}
+              windowSize={5}
+            />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No popular wines available</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -235,5 +396,32 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: '#7f8c8d',
     fontSize: 14,
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#e74c3c',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  retryText: {
+    color: '#e74c3c',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  emptyContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#7f8c8d',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  productsList: {
+    paddingHorizontal: 20,
   },
 }); 
