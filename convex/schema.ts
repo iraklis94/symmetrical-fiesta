@@ -262,4 +262,45 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_default", ["userId", "isDefault"]),
+    
+  // Group Wine Roulette tables
+  sessions: defineTable({
+    hostUserId: v.string(), // Clerk user ID
+    sessionCode: v.string(), // 6-digit code for joining
+    region: v.string(),
+    filters: v.object({
+      priceMin: v.optional(v.number()),
+      priceMax: v.optional(v.number()),
+      ratingMin: v.optional(v.number()),
+      categories: v.optional(v.array(v.string())),
+    }),
+    participantIds: v.array(v.string()), // Clerk user IDs
+    status: v.union(v.literal("pending"), v.literal("voting"), v.literal("complete")),
+    winnerId: v.optional(v.id("products")), // Winner wine ID
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_code", ["sessionCode"])
+    .index("by_host", ["hostUserId"])
+    .index("by_status", ["status"]),
+
+  candidateWines: defineTable({
+    sessionId: v.id("sessions"),
+    productId: v.id("products"),
+    order: v.number(), // Display order
+    createdAt: v.number(),
+  })
+    .index("by_session", ["sessionId"])
+    .index("by_session_product", ["sessionId", "productId"]),
+
+  votes: defineTable({
+    sessionId: v.id("sessions"),
+    productId: v.id("products"),
+    userId: v.string(), // Clerk user ID
+    upvote: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_session", ["sessionId"])
+    .index("by_user_session", ["userId", "sessionId"])
+    .index("by_session_product", ["sessionId", "productId"]),
 }); 

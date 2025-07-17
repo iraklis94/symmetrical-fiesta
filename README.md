@@ -1,16 +1,33 @@
-# GreekMarket - Product Discovery & Rating Platform
+# Greek Wine & Delicacies Marketplace
 
-## 🍷 Overview
+A React Native mobile application for discovering and purchasing authentic Greek wines, cheeses, and olive oils from local stores in Greece.
 
-GreekMarket is a mobile-first iOS application that revolutionizes how Greek consumers discover, rate, and purchase premium products like wine, cheese, and olive oil. Similar to Wolt but focused on specialty Greek products, the app combines real-time product availability, user ratings, and seamless delivery options.
+## Features
 
-### Key Features
-- 🗺️ **Interactive Map**: Discover nearby supermarkets and specialty stores using Mapbox
-- ⭐ **Product Ratings**: Community-driven ratings for wine, cheese, and olive oil
-- 🔍 **Smart Filtering**: Product-first search with intelligent filtering options
-- 💳 **Seamless Payments**: Integrated Stripe payment processing
-- 📊 **Real-time Data**: Live product availability and pricing through APIs
-- 🚚 **Delivery Options**: Order for pickup or delivery from partnered stores
+### Core Features
+- **Product Discovery**: Browse curated Greek wines, artisanal cheeses, and premium olive oils
+- **Store Locator**: Find nearby stores and check product availability in real-time
+- **Multi-Store Cart**: Order from multiple stores in a single checkout
+- **Barcode Scanning**: Quick product lookup and price comparison
+- **Real-time Inventory**: Live stock updates from partnered stores
+
+### Wine Roulette 🎲🍷
+**NEW!** A social feature for groups to democratically select wines:
+- Create or join sessions with friends using 6-digit codes
+- Select Greek wine regions and set filters (price, rating)
+- Spin to get 4 random wine candidates
+- Vote in real-time with live tallies
+- Find the winning wine at nearby stores
+- Perfect for parties and gatherings!
+
+[Read full Wine Roulette documentation](docs/WINE_ROULETTE_FEATURE.md)
+
+### Additional Features
+- **Greek/English Support**: Bilingual interface for locals and tourists
+- **Smart Search**: Filter by region, price, ratings, and availability
+- **User Reviews**: Detailed ratings with wine-specific criteria
+- **Favorites**: Save products and create shopping lists
+- **Order Tracking**: Real-time delivery status updates
 
 ## 🏗️ Technical Stack
 

@@ -176,6 +176,10 @@ export default function HomeScreen() {
     router.push('/notifications');
   }, [isAuthenticated]);
 
+  const handleStartRoulette = useCallback(() => {
+    router.push('/roulette');
+  }, []);
+
   const renderCategory = useCallback(({ item }: { item: typeof CATEGORIES[0] }) => (
     <CategoryCard
       category={item}
@@ -237,6 +241,29 @@ export default function HomeScreen() {
       >
         {header}
         {searchBar}
+
+        {/* Wine Roulette Section */}
+        <View style={styles.rouletteSection}>
+          <TouchableOpacity
+            style={styles.rouletteCard}
+            onPress={handleStartRoulette}
+            activeOpacity={0.8}
+          >
+            <View style={styles.rouletteContent}>
+              <Text style={styles.rouletteEmoji}>🎲🍷</Text>
+              <View style={styles.rouletteTextContainer}>
+                <Text style={styles.rouletteTitle}>Wine Roulette</Text>
+                <Text style={styles.rouletteSubtitle}>
+                  Spin with friends to pick tonight's wine!
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color="#e74c3c" />
+            </View>
+            <View style={styles.rouletteBadge}>
+              <Text style={styles.rouletteBadgeText}>NEW</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* Categories */}
         <View style={styles.section}>
@@ -496,5 +523,60 @@ const styles = StyleSheet.create({
   },
   productsList: {
     paddingHorizontal: 20,
+  },
+  rouletteSection: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 25,
+  },
+  rouletteCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#e74c3c',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  rouletteContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rouletteEmoji: {
+    fontSize: 40,
+    marginRight: 16,
+  },
+  rouletteTextContainer: {
+    flex: 1,
+  },
+  rouletteTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#2c3e50',
+    marginBottom: 4,
+  },
+  rouletteSubtitle: {
+    fontSize: 14,
+    color: '#7f8c8d',
+  },
+  rouletteBadge: {
+    position: 'absolute',
+    top: -10,
+    right: -10,
+    backgroundColor: '#e74c3c',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    transform: [{ rotate: '15deg' }],
+  },
+  rouletteBadgeText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: 'bold',
   },
 }); 
