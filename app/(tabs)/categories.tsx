@@ -11,6 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 const { width } = Dimensions.get('window');
 
@@ -90,6 +92,8 @@ const FEATURED_PRODUCTS = [
 ];
 
 export default function CategoriesScreen() {
+  const convex = useConvex();
+  
   const {
     data: featuredProducts = FEATURED_PRODUCTS,
     isLoading,
@@ -97,9 +101,7 @@ export default function CategoriesScreen() {
   } = useQuery({
     queryKey: ['featured-products-categories'],
     queryFn: async () => {
-      // This would be replaced with actual Convex query
-      // return await convex.query(api.products.getFeaturedProducts, { limit: 6 });
-      return FEATURED_PRODUCTS;
+      return await convex.query(api.products.getFeaturedProducts, { limit: 6 });
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Doc, Id } from '../../convex/_generated/dataModel';
+import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 export interface CartItem {
   productId: Id<'products'>;

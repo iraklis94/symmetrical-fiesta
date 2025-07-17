@@ -13,10 +13,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { useConvex } from 'convex/react';
+import { api } from '../convex/_generated/api';
 import { ProductCard } from '../src/components/ProductCard';
 import { ProductCardSkeleton } from '../src/components/SkeletonLoader';
 
 const { width } = Dimensions.get('window');
+
+// Helper function to parse price range
+const parsePriceRange = (rangeId: string) => {
+  switch (rangeId) {
+    case 'under_10':
+      return { min: 0, max: 10 };
+    case '10_25':
+      return { min: 10, max: 25 };
+    case '25_50':
+      return { min: 25, max: 50 };
+    case 'over_50':
+      return { min: 50, max: 1000 };
+    default:
+      return undefined;
+  }
+};
 
 const CATEGORIES = [
   { id: 'all', name: 'All', nameGr: 'Όλα' },
@@ -38,6 +56,7 @@ export default function SearchScreen() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const convex = useConvex();
 
   const {
     data: searchResults = [],
@@ -49,17 +68,13 @@ export default function SearchScreen() {
     queryFn: async () => {
       if (!searchTerm.trim()) return [];
       
-      // This would be replaced with actual Convex query
-      // return await convex.query(api.products.searchProducts, {
-      //   searchTerm: searchTerm.trim(),
-      //   category: selectedCategory === 'all' ? undefined : selectedCategory,
-      //   filters: {
-      //     priceRange: selectedPriceRange === 'all' ? undefined : parsePriceRange(selectedPriceRange),
-      //   },
-      // });
-      
-      // Mock data for now
-      return [];
+      return await convex.query(api.products.searchProducts, {
+        searchTerm: searchTerm.trim(),
+        category: selectedCategory === 'all' ? undefined : selectedCategory,
+        filters: {
+          priceRange: selectedPriceRange === 'all' ? undefined : parsePriceRange(selectedPriceRange),
+        },
+      });
     },
     enabled: searchTerm.trim().length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes
