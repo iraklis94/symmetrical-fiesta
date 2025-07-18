@@ -17,6 +17,7 @@
     "optimize": "npm run lint && npm run analyze && npm run test"
   },
   "dependencies": {
+    "@clerk/clerk-expo": "^2.14.8",
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^5.1.6",
     "@react-native-async-storage/async-storage": "2.1.2",
@@ -57,8 +58,9 @@
     "@babel/core": "^7.20.0",
     "@testing-library/react-native": "^12.2.0",
     "@types/react": "~19.0.10",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^8.45.0",
     "eslint-config-expo": "~9.2.0",
     "eslint-plugin-react": "^7.32.2",
@@ -71,9 +73,17 @@
   "expo": {
     "doctor": {
       "reactNativeDirectoryCheck": {
-        "exclude": ["convex"]
+        "exclude": [
+          "convex"
+        ]
       }
     }
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"
+    ]
   },
   "private": true
 }
