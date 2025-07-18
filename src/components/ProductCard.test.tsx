@@ -14,7 +14,7 @@ describe('ProductCard', () => {
   it('renders correctly', () => {
     const { getByText } = render(<ProductCard product={mockProduct} onPress={() => {}} />);
     expect(getByText('Test Product')).toBeTruthy();
-    expect(getByText('From €--')).toBeTruthy();
+    expect(getByText('€9.99')).toBeTruthy();
   });
 
   it('calls onPress when pressed', () => {

@@ -166,7 +166,7 @@ export const usePerformanceMeasure = (componentName: string) => {
   React.useEffect(() => {
     const duration = performance.now() - startTime.current;
     performanceMonitor.recordMetric(`${componentName}-mount`, duration);
-  }, []);
+  }, [componentName]);
 };
 
 // HOC for measuring component performance
@@ -174,8 +174,11 @@ export const withPerformanceMeasure = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
   componentName: string
 ) => {
-  return React.forwardRef<any, P>((props, ref) => {
+  const MeasuredComponent = React.forwardRef<any, P>((props, ref) => {
     usePerformanceMeasure(componentName);
-    return <WrappedComponent {...props} ref={ref} />;
+    return React.createElement(WrappedComponent, { ...props, ref });
   });
+  
+  MeasuredComponent.displayName = `withPerformanceMeasure(${componentName})`;
+  return MeasuredComponent;
 };

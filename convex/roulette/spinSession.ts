@@ -44,7 +44,7 @@ export default mutation({
     const count = args.candidateCount || 4;
     
     // Build the query for wines
-    let wineQuery = ctx.db
+    const wineQuery = ctx.db
       .query("products")
       .withIndex("by_category", (q) => q.eq("category", "wine"))
       .filter((q) => q.eq(q.field("active"), true));
