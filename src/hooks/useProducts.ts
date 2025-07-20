@@ -16,7 +16,7 @@ export const useFeaturedProducts = (limit: number = 10) => {
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 
@@ -36,7 +36,7 @@ export const useProductsByCategory = (category: string, limit: number = 20) => {
     },
     enabled: isAuthenticated && !!category,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -54,7 +54,7 @@ export const useProduct = (productId: Id<'products'> | null) => {
     },
     enabled: isAuthenticated && !!productId,
     staleTime: 10 * 60 * 1000, // 10 minutes for product details
-    cacheTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 };
 
@@ -82,7 +82,7 @@ export const useSearchProducts = (
     },
     enabled: isAuthenticated && !!searchTerm.trim(),
     staleTime: 2 * 60 * 1000, // 2 minutes for search results
-    cacheTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 };
 
@@ -106,7 +106,7 @@ export const useProductAvailability = (
     },
     enabled: isAuthenticated && !!productId,
     staleTime: 1 * 60 * 1000, // 1 minute for availability data
-    cacheTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 };
 
@@ -124,7 +124,7 @@ export const useBarcodeScan = (barcode: string | null) => {
     },
     enabled: isAuthenticated && !!barcode,
     staleTime: 30 * 60 * 1000, // 30 minutes for barcode data
-    cacheTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 60 * 60 * 1000, // 1 hour
   });
 };
 
