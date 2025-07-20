@@ -52,6 +52,7 @@
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
     "react-native-toast-message": "^2.2.0",
+    "stripe": "^12.18.0",
     "zustand": "^4.4.0"
   },
   "devDependencies": {
