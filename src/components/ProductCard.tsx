@@ -14,7 +14,7 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.4;
 
 interface ProductCardProps {
-  product: Doc<'products'>;
+  product: Doc<'products'> & { price?: number };
   onPress: (product: Doc<'products'>) => void;
   style?: any;
 }

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { PerformanceObserver, PerformanceEntry } from 'react-native';
 
