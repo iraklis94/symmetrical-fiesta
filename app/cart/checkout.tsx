@@ -220,13 +220,13 @@ export default function CheckoutScreen() {
         {/* Delivery Options */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Delivery Method</Text>
-          {DELIVERY_OPTIONS.map(renderDeliveryOption)}
+          {DELIVERY_OPTIONS.map(item => renderDeliveryOption({ item }))}
         </View>
 
         {/* Payment Method */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          {PAYMENT_METHODS.map(renderPaymentMethod)}
+          {PAYMENT_METHODS.map(item => renderPaymentMethod({ item }))}
         </View>
 
         {/* Order Total */}

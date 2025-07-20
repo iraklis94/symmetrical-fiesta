@@ -13,7 +13,7 @@ interface OptimizedImageProps {
   source: string | { uri: string };
   style?: ImageStyle;
   containerStyle?: ViewStyle;
-  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center' | 'repeat';
+  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
   placeholder?: string;
   fallback?: string;
   priority?: 'low' | 'normal' | 'high';
@@ -82,8 +82,7 @@ export const OptimizedImage = React.memo(({
       case 'cover': return 'cover';
       case 'contain': return 'contain';
       case 'stretch': return 'fill';
-      case 'center': return 'center';
-      case 'repeat': return 'repeat';
+      case 'center': return 'contain';
       default: return 'cover';
     }
   }, [resizeMode]);

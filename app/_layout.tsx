@@ -50,7 +50,7 @@ export default function RootLayout() {
       // Preload critical resources
       await Promise.all([
         // Add any critical preloading here
-        new Promise(resolve => setTimeout(resolve, 500)), // Reduced delay
+        new Promise<void>((res) => setTimeout(res, 500)), // Reduced delay
       ]);
     } catch (e) {
       console.warn('Error during app preparation:', e);

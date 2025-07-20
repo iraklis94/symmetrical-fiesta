@@ -235,9 +235,8 @@ export default function HomeScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-        removeClippedSubviews={true}
-        maxToRenderPerBatch={10}
-        windowSize={10}
+        // removeClippedSubviews improves performance but is not in ScrollView types
+        // maxToRenderPerBatch={10}
       >
         {header}
         {searchBar}

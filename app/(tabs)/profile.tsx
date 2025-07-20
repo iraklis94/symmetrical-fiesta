@@ -75,7 +75,7 @@ const PROFILE_MENU_ITEMS = [
 ];
 
 export default function ProfileScreen() {
-  const { isAuthenticated, user } = useConvexAuth();
+  const { isAuthenticated } = useConvexAuth();
 
   const handleMenuItemPress = useCallback((itemId: string) => {
     switch (itemId) {
@@ -145,6 +145,9 @@ export default function ProfileScreen() {
       <Ionicons name="chevron-forward" size={20} color="#7f8c8d" />
     </TouchableOpacity>
   ), [handleMenuItemPress]);
+
+  // TODO: Replace with actual user details once Convex auth provides them
+  const user: any = undefined;
 
   if (!isAuthenticated) {
     return (
@@ -237,7 +240,7 @@ export default function ProfileScreen() {
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
-          {PROFILE_MENU_ITEMS.map(renderMenuItem)}
+          {PROFILE_MENU_ITEMS.map(item => renderMenuItem({ item }))}
         </View>
 
         {/* App Version */}

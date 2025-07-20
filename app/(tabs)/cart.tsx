@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCartStore } from '../../src/stores/cartStore';
+import { Id } from '../../convex/_generated/dataModel';
 
 const { width } = Dimensions.get('window');
 
@@ -27,7 +28,7 @@ export default function CartScreen() {
   const storeGroups = useMemo(() => getStoreGroups(), [getStoreGroups]);
   const totalPrice = useMemo(() => getTotalPrice(), [getTotalPrice]);
 
-  const handleQuantityChange = useCallback((productId: string, storeId: string, newQuantity: number) => {
+  const handleQuantityChange = useCallback((productId: Id<'products'>, storeId: Id<'stores'>, newQuantity: number) => {
     if (newQuantity <= 0) {
       Alert.alert(
         'Remove Item',
@@ -42,7 +43,7 @@ export default function CartScreen() {
     }
   }, [updateQuantity, removeItem]);
 
-  const handleRemoveItem = useCallback((productId: string, storeId: string) => {
+  const handleRemoveItem = useCallback((productId: Id<'products'>, storeId: Id<'stores'>) => {
     Alert.alert(
       'Remove Item',
       'Do you want to remove this item from your cart?',
