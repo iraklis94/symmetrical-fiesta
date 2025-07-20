@@ -12,6 +12,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCartStore } from '../../src/stores/cartStore';
+import { useStripe } from '@stripe/stripe-react-native';
+import { useMutation as useConvexMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 const { width } = Dimensions.get('window');
 
@@ -42,39 +45,59 @@ export default function CheckoutScreen() {
   );
   const total = useMemo(() => subtotal + deliveryFee, [subtotal, deliveryFee]);
 
-  const handlePlaceOrder = useCallback(() => {
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+
+  const createPaymentIntent = useConvexMutation((api as any).payments.createPaymentIntent);
+
+  const handlePlaceOrder = useCallback(async () => {
     if (items.length === 0) {
       Alert.alert('Empty Cart', 'Please add items to your cart before checkout');
       return;
     }
 
-    Alert.alert(
-      'Confirm Order',
-      `Total: €${total.toFixed(2)}\n\nProceed with payment?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () => {
-            // Here you would integrate with Stripe or other payment processor
-            Alert.alert(
-              'Order Placed!',
-              'Your order has been successfully placed. You will receive a confirmation email shortly.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    clearCart();
-                    router.replace('/(tabs)');
-                  },
-                },
-              ]
-            );
+    try {
+      // 1. Create a PaymentIntent on the backend
+      const amountInCents = Math.round(total * 100);
+      const { clientSecret } = await createPaymentIntent({ amount: amountInCents });
+
+      // 2. Initialize the Stripe Payment Sheet
+      const { error: initError } = await initPaymentSheet({
+        paymentIntentClientSecret: clientSecret,
+        merchantDisplayName: 'GreekMarket',
+      });
+
+      if (initError) {
+        Alert.alert('Payment Error', initError.message);
+        return;
+      }
+
+      // 3. Present the Payment Sheet to the user
+      const { error: paymentError } = await presentPaymentSheet();
+
+      if (paymentError) {
+        Alert.alert('Payment Error', paymentError.message);
+        return;
+      }
+
+      // 4. On successful payment, clear cart and navigate
+      Alert.alert(
+        'Order Placed!',
+        'Your payment was successful. You will receive a confirmation email shortly.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              clearCart();
+              router.replace('/(tabs)');
+            },
           },
-        },
-      ]
-    );
-  }, [items.length, total, clearCart]);
+        ]
+      );
+    } catch (error: any) {
+      console.error('Payment error', error);
+      Alert.alert('Payment Error', error.message || 'Something went wrong while processing the payment.');
+    }
+  }, [items.length, total, createPaymentIntent, initPaymentSheet, presentPaymentSheet, clearCart]);
 
   const renderStoreSection = useCallback((storeId: string, storeItems: any[]) => {
     const store = storeItems[0]?.store;
