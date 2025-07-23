@@ -49,6 +49,9 @@ export default function CheckoutScreen() {
 
   const createPaymentIntent = useConvexMutation((api as any).payments.createPaymentIntent);
 
+  // Mutation to record olive-oil purchases for the Virtual Orchard
+  const recordOilPurchase = useConvexMutation((api as any).orchard.recordOilPurchase);
+
   const handlePlaceOrder = useCallback(async () => {
     if (items.length === 0) {
       Alert.alert('Empty Cart', 'Please add items to your cart before checkout');
@@ -79,10 +82,23 @@ export default function CheckoutScreen() {
         return;
       }
 
-      // 4. On successful payment, clear cart and navigate
+      // 4. After successful payment, record olive-oil contribution (if any)
+      const oilTanksPurchased = items
+        .filter((i) => i.product.category === 'olive_oil')
+        .reduce((sum, i) => sum + i.quantity, 0);
+
+      if (oilTanksPurchased > 0) {
+        try {
+          await recordOilPurchase({ tanks: oilTanksPurchased });
+        } catch (e) {
+          console.warn('Failed to record orchard contribution', e);
+        }
+      }
+
+      // 5. Clear cart and navigate
       Alert.alert(
         'Order Placed!',
-        'Your payment was successful. You will receive a confirmation email shortly.',
+        `Your payment was successful. ${oilTanksPurchased > 0 ? 'A new olive tree will be planted soon!' : ''}`,
         [
           {
             text: 'OK',

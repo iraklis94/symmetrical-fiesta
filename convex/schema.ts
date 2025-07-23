@@ -293,6 +293,29 @@ export default defineSchema({
     .index("by_session", ["sessionId"])
     .index("by_session_product", ["sessionId", "productId"]),
 
+  // Orchard feature tables for tree planting progress
+  orchardCounters: defineTable({
+    userId: v.id("users"),
+    pendingTanks: v.number(), // Tanks purchased since last tree planting (0-3)
+    treesPlanted: v.number(), // Total trees planted for user
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"]),
+
+  orchardTrees: defineTable({
+    userId: v.id("users"),
+    treeNumber: v.number(), // Sequential number of tree for the user (starting at 1)
+    partnerTreeId: v.optional(v.string()), // ID returned by external partner
+    location: v.optional(v.object({
+      latitude: v.number(),
+      longitude: v.number(),
+      description: v.optional(v.string()),
+    })),
+    plantedAt: v.optional(v.number()), // Timestamp when tree actually planted by partner
+    createdAt: v.number(), // When tree was triggered (purchase reached 4 tanks)
+  })
+    .index("by_user", ["userId"]),
+
   votes: defineTable({
     sessionId: v.id("sessions"),
     productId: v.id("products"),

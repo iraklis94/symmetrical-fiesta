@@ -55,6 +55,18 @@ export default function TabLayout() {
           headerTitle: 'Categories',
         }}
       />
+
+      {/* Virtual Orchard Tab */}
+      <Tabs.Screen
+        name="orchard"
+        options={{
+          title: 'Orchard',
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+            <Ionicons name="leaf" size={size} color={color} />
+          ),
+          headerTitle: 'Virtual Orchard',
+        }}
+      />
       <Tabs.Screen
         name="cart"
         options={{
