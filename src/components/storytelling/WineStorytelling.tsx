@@ -11,14 +11,19 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ISLANDS, IslandInfo, WineInfo } from './islands';
+import { IslandInfo } from './islands';
+import { useIslands, useWinesByIsland } from '../../hooks/useIslands';
 
 const { width } = Dimensions.get('window');
 
 export default function WineStorytelling() {
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const [selectedIsland, setSelectedIsland] = useState<IslandInfo | null>(null);
-  const [recommendedWine, setRecommendedWine] = useState<WineInfo | null>(null);
+  const [recommendedWine, setRecommendedWine] = useState<any | null>(null);
+
+  // Backend data
+  const islands = useIslands();
+  const wines = useWinesByIsland(selectedIsland ? selectedIsland.id : null);
 
   const goNext = () => setStep((prev) => (prev < 3 ? ((prev + 1) as any) : prev));
   const goBack = () => setStep((prev) => (prev > 0 ? ((prev - 1) as any) : prev));
@@ -34,14 +39,15 @@ export default function WineStorytelling() {
   };
 
   const randomSelectIsland = () => {
-    const island = ISLANDS[Math.floor(Math.random() * ISLANDS.length)];
+    if (!islands.length) return;
+    const island = islands[Math.floor(Math.random() * islands.length)];
     handleSelectIsland(island);
   };
 
-  const selectRecommendedWine = (island: IslandInfo) => {
-    if (!island.wines.length) return null;
-    const sorted = [...island.wines].sort((a, b) => b.rating - a.rating);
-    return sorted[0];
+  const selectRecommendedWine = () => {
+    if (!wines.length) return null;
+    const sorted = [...wines].sort((a, b) => (b.avgRating ?? b.rating ?? 0) - (a.avgRating ?? a.rating ?? 0));
+    return sorted[0] as any;
   };
 
   const renderProgress = () => (
@@ -71,7 +77,7 @@ export default function WineStorytelling() {
 
       <Text style={[styles.subtitle, { marginTop: 20 }]}>Or tap an island:</Text>
 
-      {ISLANDS.map((island) => (
+      {islands.map((island) => (
         <TouchableOpacity
           key={island.id}
           style={styles.islandOption}
@@ -98,13 +104,18 @@ export default function WineStorytelling() {
     </View>
   );
 
-  const WineCard = ({ wine }: { wine: WineInfo }) => (
+  const WineCard = ({ wine }: { wine: any }) => (
     <View style={styles.wineCard}>
-      <Image source={{ uri: wine.image }} style={styles.wineImage} />
+      <Image
+        source={{ uri: wine.image || (wine.images?.[0] ?? 'https://via.placeholder.com/80x110') }}
+        style={styles.wineImage}
+      />
       <View style={styles.wineInfo}>
         <Text style={styles.wineName}>{wine.name}</Text>
-        <Text style={styles.winePrice}>€{wine.price.toFixed(2)}</Text>
-        <Text style={styles.wineRating}>{wine.rating.toFixed(1)}★</Text>
+        {'price' in wine || wine.inventory?.price ? (
+          <Text style={styles.winePrice}>€{(wine.price ?? wine.inventory?.price ?? 0).toFixed(2)}</Text>
+        ) : null}
+        <Text style={styles.wineRating}>{(wine.rating ?? wine.avgRating ?? 0).toFixed(1)}★</Text>
       </View>
     </View>
   );
@@ -115,7 +126,7 @@ export default function WineStorytelling() {
         <>
           <Text style={styles.title}>Wines from {selectedIsland.name}</Text>
           <FlatList
-            data={selectedIsland.wines}
+            data={wines}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <WineCard wine={item} />}
             style={{ width: '100%' }}
@@ -124,7 +135,7 @@ export default function WineStorytelling() {
           <TouchableOpacity
             style={styles.nextButton}
             onPress={() => {
-              const rec = selectRecommendedWine(selectedIsland);
+              const rec = selectRecommendedWine();
               setRecommendedWine(rec);
               goNext();
             }}
@@ -142,10 +153,17 @@ export default function WineStorytelling() {
         <>
           <Text style={styles.title}>Your Wine Pick</Text>
           <Text style={styles.subtitle}>{selectedIsland.name}</Text>
-          <Image source={{ uri: recommendedWine.image }} style={styles.coverImage} />
-          <Text style={styles.wineName}>{recommendedWine.name}</Text>
-          <Text style={styles.winePrice}>€{recommendedWine.price.toFixed(2)}</Text>
-          <Text style={styles.wineRating}>{recommendedWine.rating.toFixed(1)}★</Text>
+          <Image
+            source={{ uri: (recommendedWine as any).image || (recommendedWine as any).images?.[0] || 'https://via.placeholder.com/300x200' }}
+            style={styles.coverImage}
+          />
+          <Text style={styles.wineName}>{(recommendedWine as any).name}</Text>
+          {'price' in recommendedWine && (
+            <Text style={styles.winePrice}>€{(recommendedWine as any).price?.toFixed(2)}</Text>
+          )}
+          {'avgRating' in recommendedWine && (
+            <Text style={styles.wineRating}>{(recommendedWine as any).avgRating?.toFixed(1)}★</Text>
+          )}
 
           <TouchableOpacity
             style={styles.addCartButton}
