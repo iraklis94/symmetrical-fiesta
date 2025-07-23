@@ -127,6 +127,14 @@ export default function RootLayout() {
                       headerShown: true,
                     }}
                   />
+                  <Stack.Screen
+                    name="storytelling"
+                    options={{
+                      title: 'Wine Story',
+                      headerShown: true,
+                      headerBackTitle: 'Back',
+                    }}
+                  />
                 </Stack>
                 <Toast />
               </SafeAreaProvider>
