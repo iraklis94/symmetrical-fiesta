@@ -104,14 +104,14 @@ export default function WineStorytelling() {
           {selectedIsland.regionClassification && (
             <Text style={styles.infoText}>Classification: {selectedIsland.regionClassification}</Text>
           )}
-          {selectedIsland.grapes?.length && (
-            <Text style={styles.infoText}>Key Grapes: {selectedIsland.grapes.join(', ')}</Text>
+          {!!selectedIsland.grapes?.length && (
+            <Text style={styles.infoText}>Key Grapes: {selectedIsland.grapes!.join(', ')}</Text>
           )}
-          {selectedIsland.styles?.length && (
-            <Text style={styles.infoText}>Signature Styles: {selectedIsland.styles.join(', ')}</Text>
+          {!!selectedIsland.styles?.length && (
+            <Text style={styles.infoText}>Signature Styles: {selectedIsland.styles!.join(', ')}</Text>
           )}
-          {selectedIsland.producers?.length && (
-            <Text style={styles.infoText}>Producers: {selectedIsland.producers.join(', ')}</Text>
+          {!!selectedIsland.producers?.length && (
+            <Text style={styles.infoText}>Producers: {selectedIsland.producers!.join(', ')}</Text>
           )}
 
           <TouchableOpacity style={styles.nextButton} onPress={goNext}>
