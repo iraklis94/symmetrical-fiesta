@@ -20,9 +20,11 @@ interface ProductCardProps {
 }
 
 export const ProductCard = React.memo(({ product, onPress, style }: ProductCardProps) => {
-  const formatPrice = useMemo(() => (price: number) => {
-    return `€${price.toFixed(2)}`;
-  }, []);
+  /**
+   * Formats a numeric price value with the € currency symbol and exactly two decimals.
+   * Wrapped in useMemo so the formatter function is created only once.
+   */
+  const formatPrice = useMemo(() => (price: number) => `€${price.toFixed(2)}`, []);
 
   const getCategoryEmoji = useMemo(() => (category: string) => {
     switch (category) {
@@ -94,7 +96,9 @@ export const ProductCard = React.memo(({ product, onPress, style }: ProductCardP
           </View>
 
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>€{product.price?.toFixed(2) || '--'}</Text>
+            <Text style={styles.price}>
+              {product.price != null ? formatPrice(product.price) : '€--'}
+            </Text>
           </View>
         </View>
       </View>
