@@ -25,6 +25,13 @@ export default function WineStorytelling() {
   const islands = useIslands();
   const wines = useWinesByIsland(selectedIsland ? selectedIsland.id : null);
 
+  // Memoised computations for performance
+  const recommendedWineMemo = React.useMemo(() => {
+    if (!wines.length) return null;
+    const sorted = [...wines].sort((a, b) => (b.avgRating ?? b.rating ?? 0) - (a.avgRating ?? a.rating ?? 0));
+    return sorted[0] as any;
+  }, [wines]);
+
   const goNext = () => setStep((prev) => (prev < 3 ? ((prev + 1) as any) : prev));
   const goBack = () => setStep((prev) => (prev > 0 ? ((prev - 1) as any) : prev));
   const restart = () => {
@@ -40,15 +47,12 @@ export default function WineStorytelling() {
 
   const randomSelectIsland = () => {
     if (!islands.length) return;
-    const island = islands[Math.floor(Math.random() * islands.length)];
+    const island = islands[Math.floor(Math.random() * islands.length)] as any;
     handleSelectIsland(island);
   };
 
-  const selectRecommendedWine = () => {
-    if (!wines.length) return null;
-    const sorted = [...wines].sort((a, b) => (b.avgRating ?? b.rating ?? 0) - (a.avgRating ?? a.rating ?? 0));
-    return sorted[0] as any;
-  };
+  // Legacy helper kept for backward compat but delegates to memoised value
+  const selectRecommendedWine = () => recommendedWineMemo;
 
   const renderProgress = () => (
     <View style={styles.progressContainer}>
@@ -96,6 +100,20 @@ export default function WineStorytelling() {
           <Text style={styles.title}>{selectedIsland.name}</Text>
           <Image source={{ uri: selectedIsland.image }} style={styles.coverImage} />
           <Text style={styles.historyText}>{selectedIsland.history}</Text>
+
+          {selectedIsland.regionClassification && (
+            <Text style={styles.infoText}>Classification: {selectedIsland.regionClassification}</Text>
+          )}
+          {!!selectedIsland.grapes?.length && (
+            <Text style={styles.infoText}>Key Grapes: {selectedIsland.grapes!.join(', ')}</Text>
+          )}
+          {!!selectedIsland.styles?.length && (
+            <Text style={styles.infoText}>Signature Styles: {selectedIsland.styles!.join(', ')}</Text>
+          )}
+          {!!selectedIsland.producers?.length && (
+            <Text style={styles.infoText}>Producers: {selectedIsland.producers!.join(', ')}</Text>
+          )}
+
           <TouchableOpacity style={styles.nextButton} onPress={goNext}>
             <Text style={styles.nextButtonText}>See Wines</Text>
           </TouchableOpacity>
@@ -292,6 +310,13 @@ const styles = StyleSheet.create({
     color: '#374151',
     textAlign: 'center',
     paddingHorizontal: 24,
+  },
+  infoText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#4b5563',
+    textAlign: 'center',
+    marginTop: 6,
   },
   nextButton: {
     marginTop: 24,
